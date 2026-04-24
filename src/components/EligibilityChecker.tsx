@@ -5,7 +5,11 @@ import { useSettings, translations } from '../hooks/useSettings';
 
 type Step = 'citizenship' | 'age' | 'registration' | 'result';
 
-const EligibilityChecker: React.FC = () => {
+interface EligibilityCheckerProps {
+  onNavigate: (section: any) => void;
+}
+
+const EligibilityChecker: React.FC<EligibilityCheckerProps> = ({ onNavigate }) => {
   const { language } = useSettings();
   const t = translations[language];
   const [currentStep, setCurrentStep] = useState<Step>('citizenship');
@@ -90,7 +94,7 @@ const EligibilityChecker: React.FC = () => {
                 </p>
                 
                 {isEligible ? (
-                  <button className="btn-primary" onClick={() => setCurrentStep('citizenship')}>
+                  <button className="btn-primary" onClick={() => onNavigate('info')}>
                     {language === 'hi' ? "बूथ खोजें" : "Find my booth"} <ArrowRight size={18} />
                   </button>
                 ) : (

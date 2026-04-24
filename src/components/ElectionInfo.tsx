@@ -13,8 +13,9 @@ const ElectionInfo: React.FC = () => {
   const [pincode, setPincode] = useState('');
 
   const upcomingElections = [
-    { title: language === 'hi' ? "आम चुनाव 2024" : "General Elections 2024", date: language === 'hi' ? "अप्रैल - मई 2024" : "April - May 2024", type: language === 'hi' ? "राष्ट्रीय" : "National" },
-    { title: language === 'hi' ? "राज्य विधानसभा चुनाव" : "State Assembly Elections", date: language === 'hi' ? "जल्द आ रहा है" : "Coming Soon", type: language === 'hi' ? "क्षेत्रीय" : "Regional" }
+    { title: language === 'hi' ? "वोटिंग चरण 6" : "Voting Phase 6", date: language === 'hi' ? "25 मई, 2024" : "May 25, 2024", type: language === 'hi' ? "लोकसभा" : "Lok Sabha" },
+    { title: language === 'hi' ? "वोटिंग चरण 7" : "Voting Phase 7", date: language === 'hi' ? "01 जून, 2024" : "June 01, 2024", type: language === 'hi' ? "लोकसभा" : "Lok Sabha" },
+    { title: language === 'hi' ? "चुनाव परिणाम" : "Election Results", date: language === 'hi' ? "04 जून, 2024" : "June 04, 2024", type: language === 'hi' ? "घोषणा" : "Declaration" }
   ];
 
   const handleDetectLocation = () => {

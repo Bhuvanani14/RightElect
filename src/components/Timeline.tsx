@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { CheckCircle2, Circle, Clock, ChevronRight, Info } from 'lucide-react';
+import { CheckCircle2, Circle, Clock, ChevronRight, Info, ExternalLink } from 'lucide-react';
 import { ELECTION_STAGES, type ElectionStage } from '../data/election-data';
 import { useSettings, translations } from '../hooks/useSettings';
 
@@ -63,8 +63,12 @@ const Timeline: React.FC = () => {
           <p className="long-desc">
             {language === 'hi' ? selectedStage.longDescHi : selectedStage.longDesc}
           </p>
-          <button className="btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
-            {language === 'hi' ? "अधिक जानें" : "Learn More"}
+          <button 
+            className="btn-primary" 
+            style={{ width: '100%', marginTop: '1.5rem' }}
+            onClick={() => window.open('https://eci.gov.in/elections/election-process/', '_blank')}
+          >
+            {language === 'hi' ? "विस्तृत प्रक्रिया देखें" : "View Detailed Process"} <ExternalLink size={16} />
           </button>
         </motion.div>
       )}

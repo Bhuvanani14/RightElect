@@ -40,7 +40,7 @@ function App() {
       case 'info':
         return <Timeline />;
       case 'eligibility':
-        return <EligibilityChecker />;
+        return <EligibilityChecker onNavigate={setActiveSection} />;
       case 'simulator':
         return <VotingSimulator />;
       case 'profile':
