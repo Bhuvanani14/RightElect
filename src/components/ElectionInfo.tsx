@@ -83,7 +83,7 @@ const ElectionInfo: React.FC = () => {
                 height="200" 
                 frameBorder="0" 
                 style={{ border: 0, borderRadius: '12px' }}
-                src={`https://www.google.com/maps/embed/v1/search?key=YOUR_API_KEY&q=Polling+Booth+near+${coords?.lat},${coords?.lng}`}
+                src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyCoWg4mGgYqfcNCr78gm-RN79xowHsmBVE&q=Polling+Booth+near+${coords?.lat},${coords?.lng}`}
                 allowFullScreen
               ></iframe>
               <div className="map-overlay">
