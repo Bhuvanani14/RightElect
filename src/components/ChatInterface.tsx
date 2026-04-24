@@ -137,7 +137,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
 
   return (
     <div className="chat-container">
-      <div className="messages-list">
+      <div className="messages-list scroll-hide">
         {messages.map((msg) => (
           <motion.div
             key={msg.id}
@@ -201,29 +201,29 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
           display: flex;
           flex-direction: column;
           height: 100%;
-          gap: 1rem;
+          gap: var(--spacing-sm);
         }
         .messages-list {
           flex: 1;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
-          gap: 1.5rem;
-          padding-bottom: 1rem;
+          gap: var(--spacing-md);
+          padding-bottom: var(--spacing-md);
         }
         .message-wrapper {
           display: flex;
           gap: 12px;
-          max-width: 85%;
+          max-width: 90%;
         }
         .message-wrapper.user {
           flex-direction: row-reverse;
           align-self: flex-end;
         }
         .avatar {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
+          width: 38px;
+          height: 38px;
+          border-radius: 12px;
           background: var(--surface);
           display: flex;
           align-items: center;
@@ -235,32 +235,35 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
           color: var(--primary);
         }
         .message-bubble {
-          padding: 12px 16px;
-          border-radius: 16px;
+          padding: 14px 18px;
+          border-radius: 20px;
           font-size: 0.95rem;
-          line-height: 1.5;
+          line-height: 1.6;
         }
         .message-wrapper.user .message-bubble {
           background: var(--primary);
+          color: white;
           border: none;
           border-bottom-right-radius: 4px;
         }
         .message-wrapper.assistant .message-bubble {
           border-bottom-left-radius: 4px;
+          color: var(--text-main);
         }
         .suggestions {
           display: flex;
           flex-wrap: wrap;
           gap: 8px;
-          margin-top: 12px;
+          margin-top: 14px;
         }
         .suggestion-chip {
-          background: var(--glass);
+          background: var(--background);
           border: 1px solid var(--surface-border);
           color: var(--primary);
-          padding: 6px 12px;
-          border-radius: 20px;
+          padding: 8px 14px;
+          border-radius: 12px;
           font-size: 0.8rem;
+          font-weight: 600;
           cursor: pointer;
           display: flex;
           align-items: center;
@@ -268,16 +271,19 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
           transition: all 0.2s;
         }
         .suggestion-chip:hover {
-          background: rgba(79, 70, 229, 0.1);
+          transform: translateY(-1px);
           border-color: var(--primary);
+          background: var(--primary-glow);
         }
         .input-area {
           display: flex;
           align-items: center;
-          padding: 8px 12px;
-          gap: 8px;
+          padding: 10px 14px;
+          gap: 12px;
           margin-top: auto;
-          border-radius: 24px;
+          border-radius: 20px;
+          background: var(--surface);
+          border: 1px solid var(--surface-border);
         }
         .input-area input {
           flex: 1;
@@ -287,19 +293,38 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
           outline: none;
           padding: 8px;
           font-family: inherit;
+          font-size: 0.95rem;
+        }
+        .input-area input::placeholder {
+           color: var(--text-muted);
+           opacity: 0.7;
         }
         .send-btn {
           background: var(--primary);
           color: white;
           border: none;
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
+          width: 44px;
+          height: 44px;
+          border-radius: 14px;
           display: flex;
           align-items: center;
           justify-content: center;
           cursor: pointer;
+          flex-shrink: 0;
+          transition: transform 0.2s;
         }
+        .send-btn:active { transform: scale(0.9); }
+        
+        .icon-btn.voice {
+          color: var(--text-muted);
+          background: none;
+          border: none;
+          cursor: pointer;
+          padding: 8px;
+          border-radius: 10px;
+          transition: all 0.2s;
+        }
+        
         .typing-indicator {
           padding: 12px 16px;
           display: flex;
@@ -319,6 +344,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({ onNavigate }) => {
           0%, 80%, 100% { transform: scale(0); }
           40% { transform: scale(1); }
         }
+        .scroll-hide::-webkit-scrollbar { display: none; }
       `}</style>
     </div>
   );

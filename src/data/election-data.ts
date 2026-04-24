@@ -1,8 +1,11 @@
 export interface ElectionStage {
   id: number;
   title: string;
+  titleHi: string;
   description: string;
-  longDescription: string;
+  descriptionHi: string;
+  longDesc: string;
+  longDescHi: string;
   status: 'upcoming' | 'ongoing' | 'completed';
 }
 
@@ -10,43 +13,61 @@ export const ELECTION_STAGES: ElectionStage[] = [
   {
     id: 1,
     title: "Election Announcement",
-    description: "The Election Commission of India (ECI) announces the schedule.",
-    longDescription: "The process begins with the official notification by the ECI. This is when the Model Code of Conduct comes into effect, ensuring a level playing field for all candidates.",
+    titleHi: "चुनाव की घोषणा",
+    description: "The ECI announces the formal schedule.",
+    descriptionHi: "ECI औपचारिक कार्यक्रम की घोषणा करता है।",
+    longDesc: "The process begins with the official notification. This is when the Model Code of Conduct comes into effect.",
+    longDescHi: "प्रक्रिया आधिकारिक अधिसूचना के साथ शुरू होती है। यह तब होता है जब आदर्श आचार संहिता लागू होती है।",
     status: 'completed'
   },
   {
     id: 2,
     title: "Voter Registration",
-    description: "Enroll yourself in the electoral roll to be eligible to vote.",
-    longDescription: "Every citizen aged 18 or above must register to vote. You can check your status on the National Voter's Service Portal (NVSP) or using the 'Right Elect' registration guide.",
+    titleHi: "मतदाता पंजीकरण",
+    description: "Enroll yourself in the electoral roll.",
+    descriptionHi: "मतदाता सूची में अपना नाम दर्ज कराएं।",
+    longDesc: "Every citizen aged 18 or above must register to vote. You can check your status on the official portal.",
+    longDescHi: "18 वर्ष या उससे अधिक आयु के प्रत्येक नागरिक को मतदान के लिए पंजीकरण करना होगा।",
     status: 'ongoing'
   },
   {
     id: 3,
     title: "Candidate Nominations",
-    description: "Candidates file their papers and are scrutinized.",
-    longDescription: "Aspiring representatives file nomination papers. These are scrutinized to ensure eligibility, followed by a period where candidates can withdraw their names.",
+    titleHi: "उम्मीदवार नामांकन",
+    description: "Candidates file their papers for scrutiny.",
+    descriptionHi: "उम्मीदवार जांच के लिए अपने कागजात दाखिल करते हैं।",
+    longDesc: "Aspiring representatives file nomination papers. These are scrutinized to ensure eligibility.",
+    longDescHi: "भावी प्रतिनिधि नामांकन पत्र दाखिल करते हैं। पात्रता सुनिश्चित करने के लिए इनकी जांच की जाती है।",
     status: 'upcoming'
   },
   {
     id: 4,
     title: "Campaigning",
-    description: "Parties and candidates present their vision to the voters.",
-    longDescription: "A intensive phase where candidates hold rallies and meetings to connect with citizens. Campaigning must stop 48 hours before the conclusion of voting.",
+    titleHi: "चुनाव प्रचार",
+    description: "Parties present their vision to the voters.",
+    descriptionHi: "दल मतदाताओं के सामने अपना दृष्टिकोण रखते हैं।",
+    longDesc: "An intensive phase where candidates hold rallies to connect with citizens before the silence period.",
+    longDescHi: "एक गहन चरण जहां उम्मीदवार नागरिकों से जुड़ने के लिए रैलियां करते हैं।",
     status: 'upcoming'
   },
   {
     id: 5,
     title: "Voting Day",
-    description: "The most crucial day - go to your booth and cast your vote.",
-    longDescription: "Citizens visit their designated polling booths to use Electronic Voting Machines (EVM) with VVPAT to securely cast their votes.",
+    titleHi: "मतदान का दिन",
+    description: "Cast your vote at your designated booth.",
+    descriptionHi: "अपने निर्धारित बूथ पर अपना वोट डालें।",
+    longDesc: "Citizens visit polling booths to use Electronic Voting Machines (EVM) to securely cast their votes.",
+    longDescHi: "नागरिक सुरक्षित रूप से अपना वोट डालने के लिए ईवीएम का उपयोग करने के लिए मतदान केंद्रों पर जाते हैं।",
     status: 'upcoming'
   },
   {
     id: 6,
     title: "Results & Declaration",
-    description: "Votes are counted and winners are announced.",
-    longDescription: "Counting happens at designated centers under strict supervision. Once results are verified, the winner is declared and the election process is formalized.",
+    titleHi: "परिणाम और घोषणा",
+    description: "Votes are counted and winners declared.",
+    descriptionHi: "मतों की गिनती की जाती है और विजेताओं की घोषणा की जाती है।",
+    longDesc: "Counting happens at designated centers. Once verified, the winner is formally declared.",
+    longDescHi: "मतगणना निर्धारित केंद्रों पर होती है। सत्यापित होने के बाद, विजेता की औपचारिक घोषणा की जाती है।",
     status: 'upcoming'
   }
 ];
@@ -54,14 +75,10 @@ export const ELECTION_STAGES: ElectionStage[] = [
 export const FAQ_DATA = [
   {
     question: "Am I eligible to vote?",
-    answer: "You are eligible if you are an Indian citizen, 18 years old or above on the qualifying date, and registered in the electoral roll of your constituency."
+    answer: "You are eligible if you are an Indian citizen, 18 years old or above, and registered in the electoral roll."
   },
   {
     question: "Can I vote without a Voter ID?",
-    answer: "Yes, provided your name is in the electoral roll. You can use other official documents like Aadhaar, Passport, or PAN card as identity proof at the polling station."
-  },
-  {
-    question: "What is EPIC?",
-    answer: "Electors Photo Identity Card (EPIC) is also known as the Voter ID card. It is issued by the ECI to all eligible voters."
+    answer: "Yes, if your name is in the roll, you can use Aadhaar, Passport, or PAN card as identity proof."
   }
 ];

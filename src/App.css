@@ -5,12 +5,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  background-color: var(--background);
 }
 
 .main-container {
   flex: 1;
-  padding: 1rem;
-  padding-bottom: 5rem; /* Space for bottom nav */
+  padding: var(--spacing-md);
+  padding-bottom: var(--safe-area-bottom);
+  overflow-y: auto;
 }
 
 .bottom-nav {
@@ -20,33 +22,42 @@
   right: 0;
   max-width: 500px;
   margin: 0 auto;
-  height: 4.5rem;
-  background: var(--surface);
-  backdrop-filter: blur(16px);
+  height: 5rem;
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-top: 1px solid var(--surface-border);
   display: flex;
   justify-content: space-around;
   align-items: center;
   z-index: 50;
   padding: 0 1rem;
+  padding-bottom: env(safe-area-inset-bottom);
 }
 
 .nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   color: var(--text-muted);
   text-decoration: none;
   font-size: 0.75rem;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  flex: 1;
 }
 
 .nav-item.active {
   color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.nav-item.active svg {
+  filter: drop-shadow(0 4px 6px var(--primary-glow));
 }
 
 .nav-item span {
-  font-weight: 500;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }

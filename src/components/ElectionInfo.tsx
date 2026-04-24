@@ -51,16 +51,15 @@ const ElectionInfo: React.FC = () => {
     setIsSearching(true);
     setError(null);
     
-    // Simulate lookup for pincode
     setTimeout(() => {
-      setCoords({ lat: 12.9716, lng: 77.5946 }); // Mock coords for the pincode
+      setCoords({ lat: 12.9716, lng: 77.5946 }); 
       setLocation(`Constituency for Pincode ${pincode}`);
       setIsSearching(false);
     }, 1200);
   };
 
   return (
-    <div className="info-container">
+    <div className="info-container animate-fade-in">
       <div className="info-header">
         <h2 className="gradient-text">{t.hubTitle}</h2>
         <p className="text-muted">{t.hubSubtitle}</p>
@@ -73,26 +72,28 @@ const ElectionInfo: React.FC = () => {
         </div>
         
         {location ? (
-          <div className="loc-result animate-fade-in">
+          <div className="loc-result">
             <p className="loc-name">{location}</p>
             <div className="election-tag">{language === 'hi' ? "आगामी मतदान: 26 मई, 2024" : "Upcoming Voting: May 26, 2024"}</div>
             
-            <div className="map-preview glass-card">
+            <div className="map-preview">
               <iframe 
                 width="100%" 
-                height="200" 
+                height="220" 
                 frameBorder="0" 
-                style={{ border: 0, borderRadius: '12px' }}
+                style={{ border: 0, borderRadius: '20px' }}
                 src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyCoWg4mGgYqfcNCr78gm-RN79xowHsmBVE&q=Polling+Booth+near+${coords?.lat},${coords?.lng}`}
                 allowFullScreen
               ></iframe>
-              <div className="map-overlay">
+              <div className="map-overlay glass-card">
                 <p><strong>{language === 'hi' ? "निकटतम बूथ:" : "Nearest Booth:"}</strong> Govt. High School, Sector 4</p>
-                <p>{language === 'hi' ? "आपके स्थान से 1.2 किमी दूर" : "1.2 km away from your location"}</p>
+                <p className="text-muted">{language === 'hi' ? "आपके स्थान से 1.2 किमी दूर" : "1.2 km away from your location"}</p>
               </div>
             </div>
 
-            <button className="btn-text" onClick={() => { setLocation(null); setCoords(null); setPincode(''); }}>{language === 'hi' ? "स्थान बदलें" : "Change Location"}</button>
+            <button className="btn-text" onClick={() => { setLocation(null); setCoords(null); setPincode(''); }}>
+               {language === 'hi' ? "स्थान बदलें" : "Change Location"}
+            </button>
           </div>
         ) : (
           <div className="loc-search">
@@ -102,18 +103,17 @@ const ElectionInfo: React.FC = () => {
               <button className="btn-primary" onClick={handleDetectLocation} disabled={isSearching}>
                 {isSearching ? (language === 'hi' ? "पता लगा रहा है..." : "Detecting...") : (language === 'hi' ? "मेरा स्थान खोजें" : "Detect My Location")}
               </button>
-              <div className="divider">{language === 'hi' ? "या" : "OR"}</div>
-              <div className="input-group">
+              <div className="divider"><span>{language === 'hi' ? "या" : "OR"}</span></div>
+              <div className="input-field">
                 <input 
                   type="text" 
                   placeholder={language === 'hi' ? "पिनकोड दर्ज करें" : "Enter Pincode"} 
                   value={pincode}
-                  onChange={(e) => setPincode(e.target.value)}
+                  maxLength={6}
+                  onChange={(e) => setPincode(e.target.value.replace(/\D/g,''))}
                   onKeyPress={(e) => e.key === 'Enter' && handlePincodeSearch()}
                 />
-                <button className="icon-btn" onClick={handlePincodeSearch}>
-                   <Search size={18} />
-                </button>
+                <button className="search-btn" onClick={handlePincodeSearch}><Search size={20} /></button>
               </div>
             </div>
           </div>
@@ -122,15 +122,19 @@ const ElectionInfo: React.FC = () => {
 
       <div className="quick-actions grid-2">
         <a href="https://voters.eci.gov.in/home/e-epic-download" target="_blank" rel="noopener noreferrer" className="action-card glass-card no-decor">
-          <Download size={24} className="text-accent" />
-          <h4>{language === 'hi' ? "e-EPIC डाउनलोड करें" : "Download e-EPIC"}</h4>
-          <p>{language === 'hi' ? "अपना डिजिटल वोटर आईडी कार्ड प्राप्त करें।" : "Get your digital voter ID card."}</p>
+          <Download size={26} className="text-accent" />
+          <div className="action-text">
+            <h4>{language === 'hi' ? "e-EPIC" : "e-EPIC"}</h4>
+            <p>{language === 'hi' ? "डाउनलोड करें" : "Download ID"}</p>
+          </div>
           <ExternalLink size={16} className="ext-icon" />
         </a>
         <a href="https://services.india.gov.in/service/detail/search-polling-station-location-online-by-election-commission-of-india-1" target="_blank" rel="noopener noreferrer" className="action-card glass-card no-decor">
-          <MapIcon size={24} className="text-secondary" />
-          <h4>{language === 'hi' ? "बूथ लोकेटर" : "Booth Locator"}</h4>
-          <p>{language === 'hi' ? "अपना निर्धारित मतदान केंद्र खोजें।" : "Find your assigned polling station."}</p>
+          <MapIcon size={26} className="text-secondary" />
+          <div className="action-text">
+            <h4>{language === 'hi' ? "बूथ खोजें" : "Booth Locator"}</h4>
+            <p>{language === 'hi' ? "केंद्र खोजें" : "Find Station"}</p>
+          </div>
           <ExternalLink size={16} className="ext-icon" />
         </a>
       </div>
@@ -153,59 +157,79 @@ const ElectionInfo: React.FC = () => {
                 <h5>{e.title}</h5>
                 <p>{e.date} • {e.type}</p>
               </div>
-              <button className="btn-icon">
-                <Bell size={18} />
-              </button>
+              <button className="btn-bell"><Bell size={18} /></button>
             </motion.div>
           ))}
         </div>
       </div>
 
       <style>{`
-        .info-container { display: flex; flex-direction: column; gap: 1.5rem; }
-        .location-card { padding: 1.5rem; }
-        .loc-title { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; }
-        .loc-result { text-align: center; padding: 1rem 0; }
-        .loc-name { font-size: 1.4rem; font-weight: 700; color: var(--text-main); margin-bottom: 8px; }
-        .election-tag { background: rgba(16, 185, 129, 0.1); color: var(--secondary); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; display: inline-block; margin-bottom: 1.5rem; }
+        .info-container { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+        .info-header { text-align: center; }
+        .loc-title { display: flex; align-items: center; gap: 12px; margin-bottom: var(--spacing-md); }
+        .loc-result { text-align: center; }
+        .loc-name { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+        .election-tag { background: var(--primary-glow); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: var(--spacing-md); }
         
-        .map-preview { position: relative; margin-bottom: 1.5rem; overflow: hidden; }
-        .map-overlay { padding: 12px; text-align: left; background: var(--surface); border-top: 1px solid var(--surface-border); }
+        .map-preview { position: relative; margin-bottom: var(--spacing-md); }
+        .map-overlay { 
+          position: absolute; 
+          bottom: 12px; 
+          left: 12px; 
+          right: 12px; 
+          padding: 16px; 
+          text-align: left; 
+          backdrop-filter: blur(20px);
+          border: 1px solid var(--surface-border);
+        }
         .map-overlay p { margin: 0; font-size: 0.85rem; }
-        .map-overlay strong { color: var(--primary); }
-+
-        .error-msg { background: rgba(239, 68, 68, 0.1); color: #EF4444; padding: 10px; border-radius: 8px; font-size: 0.8rem; margin-bottom: 1rem; }
-+
+        .map-overlay strong { color: var(--primary); display: block; margin-bottom: 4px; }
+
+        .error-msg { background: rgba(239, 68, 68, 0.1); color: #EF4444; padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 1rem; border: 1px solid rgba(239, 68, 68, 0.2); }
+
         .loc-search { text-align: center; }
-        .loc-search p { margin-bottom: 1.5rem; color: var(--text-muted); }
-        .search-box { display: flex; flex-direction: column; gap: 1rem; }
-        .divider { font-size: 0.7rem; color: var(--text-muted); font-weight: 600; }
-        .input-group { 
+        .loc-search p { margin-bottom: var(--spacing-lg); color: var(--text-muted); line-height: 1.5; }
+        .search-box { display: flex; flex-direction: column; gap: var(--spacing-md); }
+        
+        .divider { 
+          position: relative; 
+          text-align: center; 
+          margin: 10px 0; 
+        }
+        .divider::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--surface-border); }
+        .divider span { position: relative; background: var(--surface); padding: 0 12px; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
+
+        .input-field { 
           display: flex; 
           align-items: center; 
-          gap: 10px; 
-          background: var(--glass); 
+          background: var(--surface); 
           border: 1px solid var(--surface-border);
-          padding: 10px 15px;
-          border-radius: 12px;
+          padding: 6px 6px 6px 16px;
+          border-radius: 18px;
+          transition: border-color 0.2s;
         }
-        .input-group input { background: transparent; border: none; outline: none; color: var(--text-main); flex: 1; font-family: inherit; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+        .input-field:focus-within { border-color: var(--primary); }
+        .input-field input { background: transparent; border: none; outline: none; color: var(--text-main); flex: 1; font-family: inherit; font-size: 1rem; }
+        .search-btn { background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); }
         .no-decor { text-decoration: none; color: inherit; }
-        .action-card { padding: 1.2rem; position: relative; display: flex; flex-direction: column; gap: 8px; cursor: pointer; transition: transform 0.2s; }
-        .action-card:hover { transform: scale(1.02); }
-        .action-card h4 { font-size: 0.95rem; }
-        .action-card p { font-size: 0.75rem; color: var(--text-muted); }
-        .ext-icon { position: absolute; top: 1.2rem; right: 1.2rem; opacity: 0.3; }
-+
-        .upcoming-section h3 { font-size: 1.1rem; margin-bottom: 1rem; }
-        .dates-list { display: flex; flex-direction: column; gap: 8px; }
-        .date-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; }
-        .date-icon { width: 40px; height: 40px; background: rgba(79, 70, 229, 0.1); border-radius: 10px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+        .action-card { padding: 20px; position: relative; display: flex; align-items: center; gap: 14px; cursor: pointer; }
+        .action-text h4 { font-size: 1rem; font-weight: 700; }
+        .action-text p { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+        .ext-icon { position: absolute; top: 12px; right: 12px; opacity: 0.2; }
+
+        .upcoming-section h3 { font-size: 1.15rem; margin-bottom: var(--spacing-md); font-weight: 700; }
+        .dates-list { display: flex; flex-direction: column; gap: 12px; }
+        .date-item { display: flex; align-items: center; gap: 14px; padding: var(--spacing-md); }
+        .date-icon { width: 44px; height: 44px; background: var(--primary-glow); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
         .date-info { flex: 1; }
-        .date-info h5 { font-size: 0.9rem; margin-bottom: 2px; }
-        .date-info p { font-size: 0.75rem; color: var(--text-muted); }
-        .btn-icon { background: none; border: none; color: var(--text-muted); cursor: pointer; }
+        .date-info h5 { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
+        .date-info p { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+        .btn-bell { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 10px; transition: all 0.2s; }
+        .btn-bell:hover { color: var(--accent); background: rgba(245, 158, 11, 0.1); }
+        
+        .btn-text { background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; margin-top: 1rem; font-size: 0.9rem; text-decoration: underline; }
       `}</style>
     </div>
   );

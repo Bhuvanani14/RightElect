@@ -15,28 +15,27 @@ const EligibilityChecker: React.FC = () => {
     isRegistered: false
   });
 
-  const reset = () => {
-    setCurrentStep('citizenship');
-    setAnswers({ isCitizen: false, isOfAge: false, isRegistered: false });
-  };
-
-  const handleAnswer = (field: string, value: boolean) => {
-    setAnswers(prev => ({ ...prev, [field]: value }));
-    if (field === 'isCitizen') {
-      if (value) setCurrentStep('age');
-      else setCurrentStep('result');
-    } else if (field === 'isOfAge') {
-      if (value) setCurrentStep('registration');
-      else setCurrentStep('result');
-    } else if (field === 'isRegistered') {
-      setCurrentStep('result');
+  const handleAnswer = (answer: boolean) => {
+    switch (currentStep) {
+      case 'citizenship':
+        setAnswers(prev => ({ ...prev, isCitizen: answer }));
+        setCurrentStep(answer ? 'age' : 'result');
+        break;
+      case 'age':
+        setAnswers(prev => ({ ...prev, isOfAge: answer }));
+        setCurrentStep(answer ? 'registration' : 'result');
+        break;
+      case 'registration':
+        setAnswers(prev => ({ ...prev, isRegistered: answer }));
+        setCurrentStep('result');
+        break;
     }
   };
 
   const isEligible = answers.isCitizen && answers.isOfAge && answers.isRegistered;
 
   return (
-    <div className="eligibility-container">
+    <div className="eligibility-container animate-fade-in">
       <div className="header">
         <h2 className="gradient-text">{t.eligibilityTitle}</h2>
         <p className="text-muted">{t.eligibilitySubtitle}</p>
@@ -45,165 +44,135 @@ const EligibilityChecker: React.FC = () => {
       <div className="checker-card glass-card">
         <AnimatePresence mode="wait">
           {currentStep === 'citizenship' && (
-            <motion.div 
-              key="citizenship"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="quiz-step"
-            >
-              <h3>Are you a citizen of India?</h3>
-              <p>Only Indian citizens are eligible to participate in national and state elections.</p>
+            <motion.div key="1" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="quiz-step">
+              <h3>{language === 'hi' ? "क्या आप भारत के नागरिक हैं?" : "Are you a citizen of India?"}</h3>
+              <p>{language === 'hi' ? "मतदान के लिए भारतीय नागरिकता अनिवार्य है।" : "Indian citizenship is mandatory for voting."}</p>
               <div className="options">
-                <button className="btn-option" onClick={() => handleAnswer('isCitizen', true)}>Yes, I am</button>
-                <button className="btn-option secondary" onClick={() => handleAnswer('isCitizen', false)}>No</button>
+                <button className="btn-option" onClick={() => handleAnswer(true)}>{language === 'hi' ? "हाँ, मैं हूँ" : "Yes, I am"}</button>
+                <button className="btn-option secondary" onClick={() => handleAnswer(false)}>{language === 'hi' ? "नहीं" : "No"}</button>
               </div>
             </motion.div>
           )}
 
           {currentStep === 'age' && (
-            <motion.div 
-              key="age"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="quiz-step"
-            >
-              <h3>Are you 18 or older?</h3>
-              <p>You must be at least 18 years old on the qualifying date (usually Jan 1st of the election year).</p>
+            <motion.div key="2" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="quiz-step">
+              <h3>{language === 'hi' ? "क्या आपकी उम्र 18 वर्ष या उससे अधिक है?" : "Are you 18 years or older?"}</h3>
+              <p>{language === 'hi' ? "मतदान के लिए न्यूनतम आयु 18 वर्ष है।" : "The minimum age for voting is 18 years."}</p>
               <div className="options">
-                <button className="btn-option" onClick={() => handleAnswer('isOfAge', true)}>Yes, 18+</button>
-                <button className="btn-option secondary" onClick={() => handleAnswer('isOfAge', false)}>Not yet</button>
+                <button className="btn-option" onClick={() => handleAnswer(true)}>{language === 'hi' ? "हाँ" : "Yes"}</button>
+                <button className="btn-option secondary" onClick={() => handleAnswer(false)}>{language === 'hi' ? "नहीं" : "No"}</button>
               </div>
             </motion.div>
           )}
 
           {currentStep === 'registration' && (
-            <motion.div 
-              key="registration"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -20 }}
-              className="quiz-step"
-            >
-              <h3>Are you registered in the Electoral Roll?</h3>
-              <p>Being eligible is second to being registered. Do you have an EPIC (Voter ID) or are your details in the list?</p>
+            <motion.div key="3" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} className="quiz-step">
+              <h3>{language === 'hi' ? "क्या आप मतदाता सूची में पंजीकृत हैं?" : "Are you registered in the electoral roll?"}</h3>
+              <p>{language === 'hi' ? "वोट देने के लिए आपका नाम मतदाता सूची में होना चाहिए।" : "Your name must be in the electoral roll to vote."}</p>
               <div className="options">
-                <button className="btn-option" onClick={() => handleAnswer('isRegistered', true)}>Yes, I'm listed</button>
-                <button className="btn-option secondary" onClick={() => handleAnswer('isRegistered', false)}>No / Not sure</button>
+                <button className="btn-option" onClick={() => handleAnswer(true)}>{language === 'hi' ? "हाँ, मैं हूँ" : "Yes, I am"}</button>
+                <button className="btn-option secondary" onClick={() => handleAnswer(false)}>{language === 'hi' ? "नहीं" : "No"}</button>
               </div>
             </motion.div>
           )}
 
           {currentStep === 'result' && (
-            <motion.div 
-              key="result"
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="quiz-result"
-            >
-              {isEligible ? (
-                <div className="result-content success">
-                  <CheckCircle size={64} className="result-icon pulse" />
-                  <h2>You are ready to vote!</h2>
-                  <p>You meet all the primary criteria. Just find your polling booth on election day and make your voice heard!</p>
-                  <button className="btn-primary">Find My Booth <ArrowRight size={18} /></button>
+            <motion.div key="4" initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="quiz-result">
+              <div className={`result-content ${isEligible ? 'success' : 'failure'}`}>
+                <div className="result-icon pulse">
+                  {isEligible ? <CheckCircle size={80} /> : <XCircle size={80} />}
                 </div>
-              ) : (
-                <div className="result-content failure">
-                  <XCircle size={64} className="result-icon" />
-                  <h2>You're almost there!</h2>
-                  {!answers.isCitizen && <p>Only Indian citizens can vote. If you have OCI status, please check special provisions.</p>}
-                  {answers.isCitizen && !answers.isOfAge && <p>You need to be 18 to vote. You'll be eligible once you reach the age!</p>}
-                  {answers.isCitizen && answers.isOfAge && !answers.isRegistered && (
-                    <div className="next-steps">
-                      <p>You meet the criteria but need to register. Start your application today!</p>
-                      <button className="btn-primary">How to Register <ArrowRight size={18} /></button>
-                    </div>
-                  )}
-                  <button className="btn-outline" onClick={reset}><RotateCcw size={18} /> Try Again</button>
-                </div>
-              )}
+                <h2>{isEligible ? (language === 'hi' ? "आप पात्र हैं!" : "You are Eligible!") : (language === 'hi' ? "आप अभी पात्र नहीं हैं" : "You are not eligible yet")}</h2>
+                <p>
+                  {isEligible 
+                    ? (language === 'hi' ? "बधाई हो! आप मतदान करने के लिए पूरी तरह तैयार हैं।" : "Great news! You are all set to participate in the democracy.")
+                    : (language === 'hi' ? "चिंता न करें, हम इसे ठीक करने में आपकी मदद कर सकते हैं।" : "Don't worry, we can help you get ready.")}
+                </p>
+                
+                {isEligible ? (
+                  <button className="btn-primary" onClick={() => setCurrentStep('citizenship')}>
+                    {language === 'hi' ? "बूथ खोजें" : "Find my booth"} <ArrowRight size={18} />
+                  </button>
+                ) : (
+                  <div className="action-btns">
+                    <button className="btn-primary" onClick={() => window.open('https://voters.eci.gov.in/', '_blank')}>
+                      {language === 'hi' ? "अभी रजिस्टर करें" : "Register Now"} <ArrowRight size={18} />
+                    </button>
+                    <button className="btn-outline" onClick={() => setCurrentStep('citizenship')}>
+                      <RotateCcw size={18} /> {language === 'hi' ? "फिर से जांचें" : "Retest"}
+                    </button>
+                  </div>
+                )}
+              </div>
             </motion.div>
           )}
         </AnimatePresence>
       </div>
 
       <style>{`
-        .eligibility-container {
-          display: flex;
-          flex-direction: column;
-          gap: 1.5rem;
-        }
-        .header h2 { font-size: 1.8rem; font-weight: 700; }
-        .checker-card {
-          padding: 2rem;
-          min-height: 350px;
-          display: flex;
-          flex-direction: column;
+        .eligibility-container { display: flex; flex-direction: column; gap: var(--spacing-lg); }
+        .header { text-align: center; }
+        .checker-card { 
+          padding: var(--spacing-xl) var(--spacing-lg); 
+          min-height: 420px; 
+          display: flex; 
+          flex-direction: column; 
           justify-content: center;
+          border-width: 2px;
         }
-        .quiz-step {
-          display: flex;
-          flex-direction: column;
-          gap: 1rem;
-        }
-        .quiz-step h3 { font-size: 1.4rem; color: var(--text-main); }
-        .quiz-step p { color: var(--text-muted); line-height: 1.5; }
-        .options {
-          display: flex;
-          flex-direction: column;
-          gap: 12px;
-          margin-top: 1rem;
-        }
+        .quiz-step { display: flex; flex-direction: column; gap: 1rem; }
+        .quiz-step h3 { font-size: 1.5rem; color: var(--text-main); font-weight: 800; line-height: 1.3; }
+        .quiz-step p { color: var(--text-muted); line-height: 1.6; font-size: 0.95rem; }
+        .options { display: flex; flex-direction: column; gap: var(--spacing-sm); margin-top: 1.5rem; }
+        
         .btn-option {
           background: var(--primary);
           color: white;
           border: none;
-          padding: 16px;
-          border-radius: 12px;
-          font-weight: 600;
+          padding: 18px;
+          border-radius: 16px;
+          font-weight: 700;
+          font-size: 1rem;
           cursor: pointer;
-          transition: all 0.2s;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 4px 12px var(--primary-glow);
         }
         .btn-option.secondary {
           background: var(--glass);
           border: 1px solid var(--surface-border);
+          color: var(--text-main);
+          box-shadow: none;
         }
-        .btn-option:hover { transform: translateY(-2px); opacity: 0.9; }
+        .btn-option:active { transform: scale(0.97); }
 
-        .quiz-result {
-          text-align: center;
-        }
-        .result-content {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          gap: 1.5rem;
-        }
+        .quiz-result { text-align: center; }
+        .result-content { display: flex; flex-direction: column; align-items: center; gap: 1.5rem; }
         .result-icon { margin-bottom: 0.5rem; }
         .result-icon.pulse { animation: iconPulse 2s infinite; }
         .success .result-icon { color: var(--secondary); }
         .failure .result-icon { color: var(--accent); }
         
-        .result-content h2 { font-size: 1.6rem; }
-        .result-content p { color: var(--text-muted); }
+        .result-content h2 { font-size: 1.8rem; font-weight: 800; }
+        .result-content p { color: var(--text-muted); line-height: 1.5; font-size: 1rem; max-width: 280px; }
 
+        .action-btns { display: flex; flex-direction: column; gap: 12px; width: 100%; }
         .btn-outline {
           background: transparent;
-          border: 1px solid var(--surface-border);
-          color: var(--text-muted);
-          padding: 10px 20px;
-          border-radius: 10px;
+          border: 2px solid var(--surface-border);
+          color: var(--text-main);
+          padding: 14px 24px;
+          border-radius: 16px;
           display: flex;
           align-items: center;
-          gap: 8px;
+          justify-content: center;
+          gap: 10px;
           cursor: pointer;
+          font-weight: 700;
         }
 
         @keyframes iconPulse {
           0% { transform: scale(1); filter: drop-shadow(0 0 0px var(--secondary)); }
-          50% { transform: scale(1.1); filter: drop-shadow(0 0 10px var(--secondary)); }
+          50% { transform: scale(1.1); filter: drop-shadow(0 0 15px var(--secondary)); }
           100% { transform: scale(1); filter: drop-shadow(0 0 0px var(--secondary)); }
         }
       `}</style>
