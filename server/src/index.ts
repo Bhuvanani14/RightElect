@@ -67,31 +67,35 @@ app.get('/api/nearest-booth', async (req, res) => {
   const lat = parseFloat(String(req.query.lat || req.query.latitude || ''));
   const lng = parseFloat(String(req.query.lng || req.query.longitude || ''));
   if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
-  const mapsKey = process.env.MAPS_API_KEY || process.env.GOOGLE_API_KEY || '';
-  if (!mapsKey) return res.status(500).json({ error: 'MAPS_API_KEY not configured' });
 
   try {
-    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&keyword=polling%20station&key=${mapsKey}`;
-    const r = await axios.get(url);
-    const candidates = r.data.results || [];
-    const mapped = candidates.map((c:any) => {
-      const loc = c.geometry?.location || { lat: 0, lng: 0 };
-      return {
-        name: c.name,
-        place_id: c.place_id,
-        address: c.vicinity || c.formatted_address,
-        location: loc,
-        distance_m: Math.round(haversineDistance(lat, lng, loc.lat, loc.lng))
-      };
-    });
-
-    mapped.sort((a:any,b:any)=>a.distance_m - b.distance_m);
-    return res.json({ query: { lat, lng }, results: mapped.slice(0,5) });
+    const results = await findNearestBooths(lat, lng);
+    return res.json({ query: { lat, lng }, results: results.slice(0,5) });
   } catch (err:any) {
     console.error('nearest-booth error', err?.response?.data || err.message);
     return res.status(500).json({ error: 'failed to query maps', detail: err?.response?.data || err.message });
   }
 });
+
+export async function findNearestBooths(lat:number, lng:number) {
+  const mapsKey = process.env.MAPS_API_KEY || process.env.GOOGLE_API_KEY || '';
+  if (!mapsKey) throw new Error('MAPS_API_KEY not configured');
+  const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&keyword=polling%20station&key=${mapsKey}`;
+  const r = await axios.get(url);
+  const candidates = r.data.results || [];
+  const mapped = candidates.map((c:any) => {
+    const loc = c.geometry?.location || { lat: 0, lng: 0 };
+    return {
+      name: c.name,
+      place_id: c.place_id,
+      address: c.vicinity || c.formatted_address,
+      location: loc,
+      distance_m: Math.round(haversineDistance(lat, lng, loc.lat, loc.lng))
+    };
+  });
+  mapped.sort((a:any,b:any)=>a.distance_m - b.distance_m);
+  return mapped;
+}
 
 // Simple AI assistant proxy (Vertex AI / Generative) - best-effort stub with guidance
 app.post('/api/ai-assistant', async (req, res) => {
