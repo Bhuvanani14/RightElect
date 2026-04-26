@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import dotenv from 'dotenv';
-import {Logging} from '@google-cloud/logging';
+// @google-cloud/logging is optional at runtime; require dynamically below
 
 dotenv.config();
 
@@ -17,6 +17,9 @@ app.use((req, res, next) => { requestCount++; next(); });
 // Initialize Cloud Logging client if running on GCP or with credentials
 let logger: any = console;
 try {
+  // Dynamically require to avoid hard dependency during tests/local runs
+  // eslint-disable-next-line @typescript-eslint/no-var-requires
+  const { Logging } = require('@google-cloud/logging');
   const logging = new Logging({ projectId: process.env.GOOGLE_PROJECT_ID || undefined });
   const log = logging.log('rightelect-server');
   logger = {
@@ -36,9 +39,6 @@ try {
 }
 
 const PORT = process.env.PORT || 8080;
-const MAPS_API_KEY = process.env.MAPS_API_KEY || process.env.GOOGLE_API_KEY || '';
-const NEWS_API_KEY = process.env.NEWS_API_KEY || '';
-const GEN_KEY = process.env.GENERATIVE_API_KEY || process.env.VERTEX_API_KEY || '';
 const PROJECT_ID = process.env.GOOGLE_PROJECT_ID || process.env.GCLOUD_PROJECT || '';
 
 function haversineDistance(lat1:number, lon1:number, lat2:number, lon2:number) {
@@ -67,10 +67,11 @@ app.get('/api/nearest-booth', async (req, res) => {
   const lat = parseFloat(String(req.query.lat || req.query.latitude || ''));
   const lng = parseFloat(String(req.query.lng || req.query.longitude || ''));
   if (!lat || !lng) return res.status(400).json({ error: 'lat and lng required' });
-  if (!MAPS_API_KEY) return res.status(500).json({ error: 'MAPS_API_KEY not configured' });
+  const mapsKey = process.env.MAPS_API_KEY || process.env.GOOGLE_API_KEY || '';
+  if (!mapsKey) return res.status(500).json({ error: 'MAPS_API_KEY not configured' });
 
   try {
-    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&keyword=polling%20station&key=${MAPS_API_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=5000&keyword=polling%20station&key=${mapsKey}`;
     const r = await axios.get(url);
     const candidates = r.data.results || [];
     const mapped = candidates.map((c:any) => {
@@ -98,7 +99,8 @@ app.post('/api/ai-assistant', async (req, res) => {
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   // If user has configured GENERATIVE_API_KEY, call Vertex AI REST API (Text-Bison example)
-  if (!GEN_KEY) {
+  const genKey = process.env.GENERATIVE_API_KEY || process.env.VERTEX_API_KEY || '';
+  if (!genKey) {
     // Fallback: return a helpful canned response while instructing how to enable the API
     return res.json({
       reply: `(Local fallback) I received: ${prompt}. To enable cloud AI, set GENERATIVE_API_KEY and deploy the server with access to Vertex AI.`
@@ -110,7 +112,7 @@ app.post('/api/ai-assistant', async (req, res) => {
     const location = process.env.VERTEX_LOCATION || 'us-central1';
     const url = `https://${location}-aiplatform.googleapis.com/v1/projects/${PROJECT_ID}/locations/${location}/publishers/google/models/text-bison:predict`;
     const body = { instances: [{ content: prompt }], parameters: { temperature: 0.2, maxOutputTokens: 600 } };
-    const requestUrl = GEN_KEY ? `${url}?key=${GEN_KEY}` : url;
+    const requestUrl = genKey ? `${url}?key=${genKey}` : url;
     const headers: any = { 'Content-Type': 'application/json' };
     // If GEN_KEY is not present, the call will rely on the server's ADC (service account). When using ADC, set Authorization header externally.
     const r = await axios.post(requestUrl, body, { headers });
@@ -126,12 +128,13 @@ app.post('/api/ai-assistant', async (req, res) => {
 app.get('/api/latest-updates', async (req, res) => {
   const q = String(req.query.q || 'Election Commission of India');
   // Prefer NEWS_API_KEY if available, otherwise return helpful message
-  if (!NEWS_API_KEY) {
+  const newsKey = process.env.NEWS_API_KEY || '';
+  if (!newsKey) {
     return res.status(500).json({ error: 'NEWS_API_KEY not configured for latest updates' });
   }
 
   try {
-    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&language=en&pageSize=10&apiKey=${NEWS_API_KEY}`;
+    const url = `https://newsapi.org/v2/everything?q=${encodeURIComponent(q)}&language=en&pageSize=10&apiKey=${newsKey}`;
     const r = await axios.get(url);
     return res.json({ query: q, articles: r.data.articles });
   } catch (err:any) {
