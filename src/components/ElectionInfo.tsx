@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { MapPin, Search, Calendar, Bell, Download, ExternalLink, Map as MapIcon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { MapPin, Search, Download, Map as MapIcon, Newspaper, Info } from 'lucide-react';
 import { useSettings, translations } from '../hooks/useSettings';
 
 const ElectionInfo: React.FC = () => {
@@ -8,229 +7,207 @@ const ElectionInfo: React.FC = () => {
   const t = translations[language];
   const [location, setLocation] = useState<string | null>(null);
   const [coords, setCoords] = useState<{lat: number, lng: number} | null>(null);
+  const [booths, setBooths] = useState<any[]>([]);
+  const [electionInfo, setElectionInfo] = useState<any | null>(null);
+  const [liveUpdates, setLiveUpdates] = useState<any[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pincode, setPincode] = useState('');
 
-  const upcomingElections = [
-    { title: language === 'hi' ? "वोटिंग चरण 6" : "Voting Phase 6", date: language === 'hi' ? "25 मई, 2024" : "May 25, 2024", type: language === 'hi' ? "लोकसभा" : "Lok Sabha" },
-    { title: language === 'hi' ? "वोटिंग चरण 7" : "Voting Phase 7", date: language === 'hi' ? "01 जून, 2024" : "June 01, 2024", type: language === 'hi' ? "लोकसभा" : "Lok Sabha" },
-    { title: language === 'hi' ? "चुनाव परिणाम" : "Election Results", date: language === 'hi' ? "04 जून, 2024" : "June 04, 2024", type: language === 'hi' ? "घोषणा" : "Declaration" }
+  const electionLevels = [
+    { name: 'Lok Sabha', desc: 'National level elections (543 seats)', icon: '🏛️' },
+    { name: 'Vidhan Sabha', desc: 'State level legislative assembly', icon: '🏙️' },
+    { name: 'Panchayat/Urban', desc: 'Local body & municipal elections', icon: '🏡' }
+  ];
+
+  const newsUpdates = [
+    { title: 'New Voter Registration Deadline Extended', date: 'Oct 24, 2024', source: 'ECI News' },
+    { title: 'Digital Voter ID (e-EPIC) crossed 50M downloads', date: 'Oct 20, 2024', source: 'Press Hub' },
+    { title: 'Security protocols updated for electronic voting', date: 'Oct 15, 2024', source: 'Security Div' }
   ];
 
   const handleDetectLocation = () => {
     setIsSearching(true);
     setError(null);
-
     if (!navigator.geolocation) {
       setError("Geolocation is not supported by your browser");
       setIsSearching(false);
       return;
     }
-
     navigator.geolocation.getCurrentPosition(
       (position) => {
         const { latitude, longitude } = position.coords;
         setCoords({ lat: latitude, lng: longitude });
+        // fetch nearest booths from backend
+        const base = import.meta.env.VITE_SERVER_URL || '';
+        fetch(`${base}/api/nearest-booth?lat=${latitude}&lng=${longitude}`)
+          .then(r => r.json())
+          .then(data => setBooths(data.results || []))
+          .catch(() => {});
         setTimeout(() => {
-          setLocation("Detected Constituency (Near your coordinates)");
+          setLocation("Your detected constituency");
           setIsSearching(false);
-        }, 1000);
+        }, 800);
       },
       () => {
-        setError("Unable to retrieve your location. Please check browser permissions.");
+        setError("Unable to retrieve location. Please check browser permissions.");
         setIsSearching(false);
       }
     );
   };
 
-  const handlePincodeSearch = () => {
-    if (pincode.length !== 6) {
-      setError("Please enter a valid 6-digit pincode");
-      return;
-    }
-    setIsSearching(true);
-    setError(null);
-    
-    setTimeout(() => {
-      setCoords({ lat: 12.9716, lng: 77.5946 }); 
-      setLocation(`Constituency for Pincode ${pincode}`);
-      setIsSearching(false);
-    }, 1200);
-  };
+  React.useEffect(() => {
+    const base = import.meta.env.VITE_SERVER_URL || '';
+    fetch(`${base}/api/election-info`).then(r=>r.json()).then(setElectionInfo).catch(()=>{});
+    fetch(`${base}/api/latest-updates`).then(r=>r.json()).then(d=>setLiveUpdates(d.articles || [])).catch(()=>{});
+  }, []);
 
   return (
     <div className="info-container animate-fade-in">
-      <div className="info-header">
+      <div className="header text-center">
         <h2 className="gradient-text">{t.hubTitle}</h2>
         <p className="text-muted">{t.hubSubtitle}</p>
       </div>
 
-      <div className="location-card glass-card">
-        <div className="loc-title">
-          <MapPin size={24} className="text-primary" />
-          <h3>{language === 'hi' ? "क्षेत्र की जानकारी" : "Current Constituency"}</h3>
-        </div>
-        
-        {location ? (
-          <div className="loc-result">
-            <p className="loc-name">{location}</p>
-            <div className="election-tag">{language === 'hi' ? "आगामी मतदान: 26 मई, 2024" : "Upcoming Voting: May 26, 2024"}</div>
-            
-            <div className="map-preview">
-              <iframe 
-                width="100%" 
-                height="220" 
-                frameBorder="0" 
-                style={{ border: 0, borderRadius: '20px' }}
-                src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyCoWg4mGgYqfcNCr78gm-RN79xowHsmBVE&q=Polling+Booth+near+${coords?.lat},${coords?.lng}`}
-                allowFullScreen
-              ></iframe>
-              <div className="map-overlay glass-card">
-                <p><strong>{language === 'hi' ? "निकटतम बूथ:" : "Nearest Booth:"}</strong> Govt. High School, Sector 4</p>
-                <p className="text-muted">{language === 'hi' ? "आपके स्थान से 1.2 किमी दूर" : "1.2 km away from your location"}</p>
-              </div>
-            </div>
-
-            <button className="btn-text" onClick={() => { setLocation(null); setCoords(null); setPincode(''); }}>
-               {language === 'hi' ? "स्थान बदलें" : "Change Location"}
-            </button>
+      <div className="status-grid">
+        <div className="location-card glass-card">
+          <div className="loc-title">
+            <MapPin size={22} className="text-primary" />
+            <h3>Your Constituency</h3>
           </div>
-        ) : (
-          <div className="loc-search">
-            <p>{language === 'hi' ? "प्रासंगिक तिथियां दिखाने के लिए हमें बताएं कि आप कहां हैं।" : "Tell us where you are to show relevant dates."}</p>
-            {error && <div className="error-msg">{error}</div>}
-            <div className="search-box">
-              <button className="btn-primary" onClick={handleDetectLocation} disabled={isSearching}>
-                {isSearching ? (language === 'hi' ? "पता लगा रहा है..." : "Detecting...") : (language === 'hi' ? "मेरा स्थान खोजें" : "Detect My Location")}
+          {location ? (
+            <div className="loc-result">
+              <p className="loc-name">{location}</p>
+              <div className="map-view">
+                {coords ? (
+                  <iframe
+                    width="100%"
+                    height="200"
+                    frameBorder="0"
+                    style={{ border: 0, borderRadius: '16px' }}
+                    src={`https://www.openstreetmap.org/export/embed.html?bbox=${coords.lng - 0.02}%2C${coords.lat - 0.02}%2C${coords.lng + 0.02}%2C${coords.lat + 0.02}&layer=mapnik&marker=${coords.lat}%2C${coords.lng}`}
+                    title="map"
+                  />
+                ) : null}
+                <div className="map-labels">
+                  {booths && booths.length > 0 ? (
+                    booths.slice(0,3).map((b, i) => (
+                      <div key={i} className="label-item">
+                        <strong>{b.name}</strong> — {b.address} • {Math.round(b.distance_m)}m • <a href={`https://www.google.com/maps/search/?api=1&query=${b.location.lat},${b.location.lng}${b.place_id?`&query_place_id=${b.place_id}`:''}`} target="_blank" rel="noreferrer">Open</a>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="label-item">No nearby booths found yet.</div>
+                  )}
+                </div>
+              </div>
+              <button className="btn-text-sm" onClick={() => setLocation(null)}>Update Location</button>
+            </div>
+          ) : (
+            <div className="loc-search text-center">
+              <p className="text-muted mb-6">Detect your location for personalized booth info</p>
+              <button className="btn-primary w-full" onClick={handleDetectLocation} disabled={isSearching}>
+                {isSearching ? 'Analyzing...' : 'Detect My Location'}
               </button>
-              <div className="divider"><span>{language === 'hi' ? "या" : "OR"}</span></div>
-              <div className="input-field">
-                <input 
-                  type="text" 
-                  placeholder={language === 'hi' ? "पिनकोड दर्ज करें" : "Enter Pincode"} 
-                  value={pincode}
-                  maxLength={6}
-                  onChange={(e) => setPincode(e.target.value.replace(/\D/g,''))}
-                  onKeyPress={(e) => e.key === 'Enter' && handlePincodeSearch()}
-                />
-                <button className="search-btn" onClick={handlePincodeSearch}><Search size={20} /></button>
+              <div className="divider">OR</div>
+              <div className="input-group">
+                <input type="text" placeholder="Enter Pincode" value={pincode} onChange={e => setPincode(e.target.value)} />
+                <button className="btn-icon-sq" onClick={handleDetectLocation}><Search size={18} /></button>
               </div>
             </div>
-          </div>
-        )}
+          )}
+          {error && (
+            <div className="error-box" role="alert" style={{ color: 'var(--accent)', marginTop: '12px' }}>
+              {error}
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="quick-actions grid-2">
-        <a href="https://voters.eci.gov.in/home/e-epic-download" target="_blank" rel="noopener noreferrer" className="action-card glass-card no-decor">
-          <Download size={26} className="text-accent" />
-          <div className="action-text">
-            <h4>{language === 'hi' ? "e-EPIC" : "e-EPIC"}</h4>
-            <p>{language === 'hi' ? "डाउनलोड करें" : "Download ID"}</p>
-          </div>
-          <ExternalLink size={16} className="ext-icon" />
+      <div className="section-title">
+        <h3>Electronic Governance</h3>
+        <p>Tools for active citizenship</p>
+      </div>
+
+      <div className="action-grid-3">
+        <a href="https://voters.eci.gov.in/" target="_blank" className="action-card-sq glass-card">
+          <Download size={24} className="text-accent" />
+          <span>e-EPIC</span>
         </a>
-        <a href="https://services.india.gov.in/service/detail/search-polling-station-location-online-by-election-commission-of-india-1" target="_blank" rel="noopener noreferrer" className="action-card glass-card no-decor">
-          <MapIcon size={26} className="text-secondary" />
-          <div className="action-text">
-            <h4>{language === 'hi' ? "बूथ खोजें" : "Booth Locator"}</h4>
-            <p>{language === 'hi' ? "केंद्र खोजें" : "Find Station"}</p>
-          </div>
-          <ExternalLink size={16} className="ext-icon" />
+        <a href="https://electoralsearch.eci.gov.in/" target="_blank" className="action-card-sq glass-card">
+          <MapIcon size={24} className="text-secondary" />
+          <span>Booth Info</span>
+        </a>
+        <a href="https://affidavit.eci.gov.in/" target="_blank" className="action-card-sq glass-card">
+          <Newspaper size={24} className="text-primary" />
+          <span>Affidavits</span>
         </a>
       </div>
 
-      <div className="upcoming-section">
-        <h3>{language === 'hi' ? "महत्वपूर्ण तिथियां" : "Important Dates"}</h3>
-        <div className="dates-list">
-          {upcomingElections.map((e, idx) => (
-            <motion.div 
-               key={idx} 
-               initial={{ opacity: 0, x: -10 }} 
-               animate={{ opacity: 1, x: 0 }}
-               transition={{ delay: idx * 0.1 }}
-               className="date-item glass-card"
-            >
-              <div className="date-icon">
-                <Calendar size={20} />
+      <div className="levels-section">
+         <h4 className="mb-4 font-bold">Election Categories</h4>
+         <div className="levels-list">
+            {electionLevels.map((lvl, i) => (
+              <div key={i} className="level-item glass-card">
+                 <span className="lvl-emoji">{lvl.icon}</span>
+                 <div>
+                    <h5>{lvl.name}</h5>
+                    <p className="text-muted text-xs">{lvl.desc}</p>
+                 </div>
               </div>
-              <div className="date-info">
-                <h5>{e.title}</h5>
-                <p>{e.date} • {e.type}</p>
+            ))}
+         </div>
+      </div>
+
+      <div className="news-section">
+         <div className="flex justify-between items-center mb-4">
+            <h4 className="font-bold">Latest ECI Updates</h4>
+            <span className="text-primary text-xs font-bold">Live</span>
+         </div>
+        <div className="news-scroll">
+          {liveUpdates.length ? liveUpdates.map((n, i) => (
+            <div key={i} className="news-item glass-card card-sm">
+              <Info size={16} className="text-primary flex-shrink-0" />
+              <div>
+                <p className="news-title">{n.title}</p>
+                <span className="news-meta">{n.publishedAt ? new Date(n.publishedAt).toLocaleDateString() : ''} • {n.source?.name || ''}</span>
+                <div style={{ marginTop: 6 }}><a href={n.url} target="_blank" rel="noreferrer">Read</a></div>
               </div>
-              <button className="btn-bell"><Bell size={18} /></button>
-            </motion.div>
-          ))}
+            </div>
+          )) : (
+            <div className="news-item">No live updates available.</div>
+          )}
         </div>
       </div>
 
       <style>{`
-        .info-container { display: flex; flex-direction: column; gap: var(--spacing-lg); }
-        .info-header { text-align: center; }
-        .loc-title { display: flex; align-items: center; gap: 12px; margin-bottom: var(--spacing-md); }
-        .loc-result { text-align: center; }
-        .loc-name { font-size: 1.5rem; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
-        .election-tag { background: var(--primary-glow); color: var(--primary); padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; display: inline-block; margin-bottom: var(--spacing-md); }
+        .info-container { display: flex; flex-direction: column; gap: var(--spacing-lg); padding-bottom: 2rem; }
+        .loc-title { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+        .map-view { position: relative; margin-top: 1rem; border-radius: 18px; overflow: hidden; }
+        .map-labels { padding: 12px; font-size: 0.8rem; background: var(--surface); text-align: left; border-top: 1px solid var(--surface-border); }
+        .divider { margin: var(--spacing-sm) 0; font-size: 0.75rem; font-weight: 800; color: var(--text-muted); opacity: 0.5; }
+        .input-group { display: flex; gap: 8px; background: var(--surface); border: 1px solid var(--surface-border); padding: 6px; border-radius: 12px; }
+        .input-group input { border: none; background: transparent; padding-left: 8px; flex: 1; outline: none; color: var(--text-main); }
+        .btn-icon-sq { background: var(--primary); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
+
+        .section-title h3 { font-size: 1.2rem; font-weight: 800; }
+        .section-title p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .action-grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+        .action-card-sq { text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 8px; text-align: center; }
+        .action-card-sq span { font-size: 0.75rem; font-weight: 700; color: var(--text-main); }
+
+        .levels-list { display: flex; overflow-x: auto; gap: 12px; padding-bottom: 8px; scroll-snap-type: x mandatory; }
+        .level-item { min-width: 160px; padding: 16px; scroll-snap-align: start; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px; }
+        .lvl-emoji { font-size: 1.5rem; }
+        .level-item h5 { font-size: 0.9rem; font-weight: 700; }
+
+        .news-item { display: flex; gap: 12px; padding: 12px; margin-bottom: 10px; align-items: flex-start; }
+        .news-title { font-size: 0.85rem; font-weight: 600; line-height: 1.4; color: var(--text-main); }
+        .news-meta { font-size: 0.7rem; color: var(--text-muted); }
+        .news-scroll { max-height: 250px; overflow-y: auto; }
         
-        .map-preview { position: relative; margin-bottom: var(--spacing-md); }
-        .map-overlay { 
-          position: absolute; 
-          bottom: 12px; 
-          left: 12px; 
-          right: 12px; 
-          padding: 16px; 
-          text-align: left; 
-          backdrop-filter: blur(20px);
-          border: 1px solid var(--surface-border);
-        }
-        .map-overlay p { margin: 0; font-size: 0.85rem; }
-        .map-overlay strong { color: var(--primary); display: block; margin-bottom: 4px; }
-
-        .error-msg { background: rgba(239, 68, 68, 0.1); color: #EF4444; padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 1rem; border: 1px solid rgba(239, 68, 68, 0.2); }
-
-        .loc-search { text-align: center; }
-        .loc-search p { margin-bottom: var(--spacing-lg); color: var(--text-muted); line-height: 1.5; }
-        .search-box { display: flex; flex-direction: column; gap: var(--spacing-md); }
-        
-        .divider { 
-          position: relative; 
-          text-align: center; 
-          margin: 10px 0; 
-        }
-        .divider::before { content: ""; position: absolute; top: 50%; left: 0; right: 0; height: 1px; background: var(--surface-border); }
-        .divider span { position: relative; background: var(--surface); padding: 0 12px; font-size: 0.75rem; color: var(--text-muted); font-weight: 700; }
-
-        .input-field { 
-          display: flex; 
-          align-items: center; 
-          background: var(--surface); 
-          border: 1px solid var(--surface-border);
-          padding: 6px 6px 6px 16px;
-          border-radius: 18px;
-          transition: border-color 0.2s;
-        }
-        .input-field:focus-within { border-color: var(--primary); }
-        .input-field input { background: transparent; border: none; outline: none; color: var(--text-main); flex: 1; font-family: inherit; font-size: 1rem; }
-        .search-btn { background: var(--primary); color: white; border: none; width: 42px; height: 42px; border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--spacing-sm); }
-        .no-decor { text-decoration: none; color: inherit; }
-        .action-card { padding: 20px; position: relative; display: flex; align-items: center; gap: 14px; cursor: pointer; }
-        .action-text h4 { font-size: 1rem; font-weight: 700; }
-        .action-text p { font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
-        .ext-icon { position: absolute; top: 12px; right: 12px; opacity: 0.2; }
-
-        .upcoming-section h3 { font-size: 1.15rem; margin-bottom: var(--spacing-md); font-weight: 700; }
-        .dates-list { display: flex; flex-direction: column; gap: 12px; }
-        .date-item { display: flex; align-items: center; gap: 14px; padding: var(--spacing-md); }
-        .date-icon { width: 44px; height: 44px; background: var(--primary-glow); border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
-        .date-info { flex: 1; }
-        .date-info h5 { font-size: 0.95rem; font-weight: 700; margin-bottom: 2px; }
-        .date-info p { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
-        .btn-bell { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 8px; border-radius: 10px; transition: all 0.2s; }
-        .btn-bell:hover { color: var(--accent); background: rgba(245, 158, 11, 0.1); }
-        
-        .btn-text { background: none; border: none; color: var(--primary); font-weight: 700; cursor: pointer; margin-top: 1rem; font-size: 0.9rem; text-decoration: underline; }
+        .btn-text-sm { background: none; border: none; color: var(--primary); font-size: 0.75rem; font-weight: 700; cursor: pointer; margin-top: 10px; }
       `}</style>
     </div>
   );

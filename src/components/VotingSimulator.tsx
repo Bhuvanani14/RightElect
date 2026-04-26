@@ -30,6 +30,25 @@ const VotingSimulator: React.FC = () => {
       <div className="sim-header">
         <h2 className="gradient-text">Voting Simulator</h2>
         <p className="text-muted">Master the booth experience</p>
+        <div style={{ marginLeft: 'auto' }}>
+          <button className="btn-outline" onClick={async () => {
+            if (!navigator.geolocation) { alert('Geolocation not available'); return; }
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+              const lat = pos.coords.latitude; const lng = pos.coords.longitude;
+              try {
+                const base = import.meta.env.VITE_SERVER_URL || '';
+                const resp = await fetch(`${base}/api/nearest-booth?lat=${lat}&lng=${lng}`);
+                const data = await resp.json();
+                if (data?.results?.length) {
+                  const nearest = data.results[0];
+                  alert(`Nearest: ${nearest.name} (${nearest.address}) — ${nearest.distance_m} m`);
+                } else {
+                  alert('No nearby polling stations found.');
+                }
+              } catch (e:any) { alert('Failed to find nearest booth: ' + (e?.message || e)); }
+            }, (err) => alert('Geolocation error: ' + err.message));
+          }}>Find nearest booth</button>
+        </div>
       </div>
 
       <div className="sim-booth glass-card">
@@ -74,14 +93,16 @@ const VotingSimulator: React.FC = () => {
                 {CANDIDATES.map((c) => (
                   <div key={c.id} className="evm-row">
                     <div className="candidate-box">
-                      <span className="c-symbol">{c.symbol}</span>
+                      <span className="c-symbol" aria-hidden="true">{c.symbol}</span>
                       <span className="c-name">{c.name}</span>
                     </div>
                     <button 
                       className="vote-btn" 
                       onClick={() => handleVote(c.name)}
+                      aria-label={`Vote for ${c.name}`}
+                      title={`Vote for ${c.name}`}
                     >
-                      <div className="btn-inner"></div>
+                      <div className="btn-inner" aria-hidden="true"></div>
                     </button>
                   </div>
                 ))}

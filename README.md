@@ -48,6 +48,7 @@
    ```
 
 3. **Start the development server:**
+ - CI: a GitHub Actions workflow is included at `.github/workflows/ci.yaml` which runs lint and build. To enable smoke tests against your deployed Cloud Run service, set the repository secret `DEPLOYED_URL` to your Cloud Run URL.
    ```bash
    npm run dev
    ```
